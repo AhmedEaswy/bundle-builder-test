@@ -1,26 +1,210 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-UltraLight.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-Light.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-Regular.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-Medium.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-SemiBold.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-Bold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-ExtraBold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-Black.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-Heavy.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/Gilroy/Gilroy-Heavy.ttf") format("truetype");
+  font-weight: 950;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  color-scheme: light;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "Gilroy", Arial, Helvetica, sans-serif;
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Gilroy", Arial, Helvetica, sans-serif;
+  line-height: 1;
+  @apply font-normal;
+}
+
+.x-card-main {
+  @apply rounded-[10px] bg-[#EDF4FF] transition-all ease-in-out duration-300;
+
+  .x-card-main__title {
+    @apply lg:px-[15px] lg:pt-[15px] px-[10px] pt-[10px] pb-[5px] text-[#484848] text-xs !font-medium leading-[1] tracking-[1.6px] uppercase border-b-[0.5px] border-[#1F1F1F];
+  }
+
+  .x-card-main__body {
+    @apply lg:py-5 py-3 lg:px-[15px] px-3;
+  }
+
+  .x-product-card__discount {
+    @apply absolute top-0 end-[unset] start-0 z-10 text-white bg-[#4E2FD2] py-[2px] px-[6px] rounded-[100px] text-xs font-medium;
+  }
+
+  &.outline {
+    @apply bg-transparent rounded-none !border-none !outline-none;
+
+    .x-card-main__title {
+      @apply pt-0 lg:mt-[13px] mt-[0px];
+    }
+  }
+
+  &.lg {
+    .x-card-main__body {
+      @apply lg:px-[61px] px-5 lg:py-[35px] py-5;
+    }
+
+    .x-card-main__title {
+      @apply hidden;
+    }
+  }
+
+  &.md {
+    .x-card-main__title {
+      @apply border-b-0;
+    }
+
+    .x-card-main__body {
+      @apply p-5;
+    }
+  }
+}
+
+.x-product-card {
+  @apply p-[11px] rounded-[10px] bg-white border-[2px] border-white flex gap-[19px] items-center lg:w-[361.5px] w-full;
+
+  &.active {
+    @apply border-[#4E2FD2]/70;
+  }
+
+  .x-product-card__image {
+    @apply w-[101px] min-w-[101px] h-[137px] relative flex items-center justify-center overflow-hidden;
+
+    img {
+      @apply w-full h-full object-contain object-center;
+    }
+  }
+
+  .x-product-card__content {
+    @apply w-full;
+
+    .x-product-card__name {
+      @apply text-[#484848] text-base leading-[1] tracking-[0.6px] font-medium;
+    }
+
+    .x-product-card__description {
+      @apply text-[#1F1F1F]/75 text-xs leading-[130%] tracking-[0.6px] font-normal !mt-2;
+
+      a {
+        @apply text-[#0000EE] underline;
+      }
+    }
+
+    .x-product-card__quantity-action {
+      @apply flex size-5 rounded-[4px] transition-all duration-300 ease-in-out text-[#525963] bg-[#F0F4F7] border-[#F0F4F7]
+      cursor-pointer items-center justify-center disabled:bg-white disabled:border-[2px] disabled:hover:bg-gray-50 disabled:border-[#E6EBF0];
+
+    }
+
+    .x-product-card__variants {
+      @apply mt-[10px] flex gap-[6px] flex-wrap;
+    }
+
+    .x-product-card__variant {
+      @apply flex items-center h-[26px] border-[0.5px] border-[#CCCCCC] rounded-[2px] gap-[4px] hover:bg-[#1DF0BB0A]/50
+      text-[#1F1F1F] text-xs font-medium px-[5.5px] transition-all duration-300 ease-in-out cursor-pointer;
+
+      &.active {
+        @apply bg-[#1DF0BB0A] border-[#0AA288]
+      }
+    }
+
+    .x-product-card__price {
+      @apply text-[#575757] text-base font-medium !leading-[1] text-end;
+    }
+
+    .x-product-card__old-price {
+      @apply text-[#D8392B] text-base font-medium line-through !leading-[1] text-end;
+    }
+  }
+}
+
+.x-btn-outline {
+  @apply text-[#4E2FD2] text-lg leading-[24px] text-center font-medium w-[242px] h-[39px] rounded-[7px] font-medium border-[1px]
+   border-[#4E2FD2] hover:bg-[#4E2FD2]/10 transition-all duration-300 ease-in-out cursor-pointer hover:bg-[#4E2FD2]/10 min-w-fit w-[242px] !px-6 max-w-full;
 }
