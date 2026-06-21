@@ -20,8 +20,8 @@ export type ProductItem = {
 
 export type CategoryItem = {
   id: number;
+  key: string;
   name: string;
-  description: string;
   products: ProductItem[];
   icon_url: string;
   label: string;
