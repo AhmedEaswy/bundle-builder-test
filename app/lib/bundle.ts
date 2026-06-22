@@ -10,6 +10,15 @@ import type {
 } from "../types/bundle";
 
 export const savedSystemStorageKey = "bundle-builder.saved-system";
+export const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+export const getPublicAssetPath = (path?: string) => {
+  if (!path) return `${basePath}/file.svg`;
+  if (!path.startsWith("/")) return path;
+  if (basePath && path.startsWith(`${basePath}/`)) return path;
+
+  return `${basePath}${path}`;
+};
 
 export const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {

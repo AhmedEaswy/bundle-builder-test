@@ -2,7 +2,11 @@ import { useState } from "react";
 import Image from "next/image";
 import ReviewDialog, { type ReviewDialogType } from "./ReviewDialog";
 import { useUUID as createStableKey } from "../composables/useUUID";
-import { formatProductPeriod, getComparableOldPrice } from "../lib/bundle";
+import {
+  formatProductPeriod,
+  getComparableOldPrice,
+  getPublicAssetPath,
+} from "../lib/bundle";
 import type {
   ReviewTotals,
   SelectedReviewItem,
@@ -130,7 +134,7 @@ export default function ReviewSidebar({
                           <div className="flex justify-between">
                             <div className="flex items-center gap-3 w-1/2">
                               <Image
-                                src={item.image}
+                                src={getPublicAssetPath(item.image)}
                                 alt={product.name}
                                 width={26}
                                 height={26}
@@ -224,7 +228,7 @@ export default function ReviewSidebar({
                     <div className="flex justify-between">
                       <div className="flex items-center gap-3 w-1/2">
                         <Image
-                          src={shipping.image || "/file.svg"}
+                          src={getPublicAssetPath(shipping.image)}
                           alt={shipping.name}
                           width={26}
                           height={26}
@@ -262,7 +266,7 @@ export default function ReviewSidebar({
             <div className="flex xl:flex-row lg:flex-col md:flex-row flex-row items-start justify-between xl:gap-2 lg:gap-4 md:gap-2 gap-2">
               <div className="flex items-center gap-[25px]">
                 <Image
-                  src="/icons/protection.svg"
+                  src={getPublicAssetPath("/icons/protection.svg")}
                   alt="Protection"
                   className="xl:size-[78px] lg:size-[131px] md:size-[78px] size-[78px]"
                   width={78}
@@ -273,7 +277,7 @@ export default function ReviewSidebar({
                   <h3 className="font-semibold m-0">30-day hassle-free returns</h3>
                   <br />
                   <p className="font-normal">
-                    If you're not totally in love with the product, we will refund you 100%.
+                    If you&apos;re not totally in love with the product, we will refund you 100%.
                   </p>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { formatProductPeriod } from "../lib/bundle";
+import { formatProductPeriod, getPublicAssetPath } from "../lib/bundle";
 import type { ProductItem } from "../types/items";
 
 type ProductProps = {
@@ -58,7 +58,7 @@ export default function Product({
     >
       <div className="x-product-card__image">
         <Image
-          src={productImage}
+          src={getPublicAssetPath(productImage)}
           alt={product.name}
           width={101}
           height={137}
@@ -105,7 +105,7 @@ export default function Product({
                   disabled={variant.stock <= 0}
                 >
                   <Image
-                    src={variant.image}
+                    src={getPublicAssetPath(variant.image)}
                     alt={variant.color}
                     width={20}
                     height={20}
