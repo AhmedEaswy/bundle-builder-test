@@ -4,6 +4,7 @@ import {
   getCartKey,
   getDefaultVariantId,
   getProductStock,
+  getPublicAssetPath,
   isRequiredProduct,
 } from "../lib/bundle";
 import type { CartState, PreviewVariantState } from "../types/bundle";
@@ -70,7 +71,7 @@ export default function BundleStep({
           >
             <div className="flex items-center gap-2">
               <Image
-                src={category.icon_url}
+                src={getPublicAssetPath(category.icon_url)}
                 alt={category.name}
                 width={26}
                 height={26}
@@ -93,7 +94,7 @@ export default function BundleStep({
                 </>
               ) : null}
               <Image
-                src="/icons/arrow.svg"
+                src={getPublicAssetPath("/icons/arrow.svg")}
                 alt="Arrow right"
                 className={`rotate-180 h-[7px] w-[10px] ${isActive ? "rotate-90" : ""}`}
                 width={10}
