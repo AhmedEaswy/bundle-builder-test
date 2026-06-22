@@ -23,7 +23,7 @@ export default function Home() {
         Let’s get started!
       </h1>
 
-      <div className="max-w-[1196px] mx-auto my-[49.36px] flex lg:flex-row md:flex-col flex-col lg:gap-[29px] gap-0 overflow-hidden">
+      <div className="max-w-[1196px] mx-auto my-[49.36px] flex xl:flex-row lg:flex-col flex-col xl:gap-[29px] lg:gap-[33px] gap-0 xl:px-0 lg:px-4 md:px-0 px-0 overflow-hidden">
         <div className="w-full">
           {categories.map((category, index) => {
             const stepNumber = index + 1;
@@ -122,8 +122,8 @@ export default function Home() {
           })}
         </div>
 
-        <div className="md:w-[399px] md:min-w-[399px] max-w-full">
-          <div className="x-card-main mdl">
+        <div className="xl:w-[399px] xl:min-w-[399px] lg:w-full min-w-full max-w-full">
+          <div className="x-card-main md">
             <div className="x-card-main__title">Review</div>
             <div className="x-card-main__body">
               <h2 className="text-[22px] text-[#1F1F1F] leading-[1] tracking-[0.6px] font-medium">

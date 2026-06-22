@@ -123,14 +123,14 @@ button {
 }
 
 .x-card-main {
-  @apply rounded-[10px] bg-[#EDF4FF] transition-all ease-in-out duration-300;
+  @apply lg:rounded-[10px] rounded-none bg-[#EDF4FF] transition-all ease-in-out duration-300;
 
   .x-card-main__title {
     @apply lg:px-[15px] lg:pt-[15px] px-[10px] pt-[10px] pb-[5px] text-[#484848] text-xs !font-medium leading-[1] tracking-[1.6px] uppercase border-b-[0.5px] border-[#1F1F1F];
   }
 
   .x-card-main__body {
-    @apply lg:py-5 py-5 lg:px-[15px] px-5;
+    @apply lg:py-5 py-5 lg:px-[15px] px-5 border-b-0;
   }
 
   .x-product-card__discount {
@@ -138,10 +138,14 @@ button {
   }
 
   &.outline {
-    @apply bg-transparent rounded-none !border-none !outline-none;
+    @apply bg-transparent rounded-none !border-0 !outline-none;
 
     .x-card-main__title {
       @apply pt-0 lg:mt-[13px] mt-[0px];
+    }
+
+    .x-card-main__body {
+      @apply border-b-[0.5px] border-[#1F1F1F];
     }
   }
 
