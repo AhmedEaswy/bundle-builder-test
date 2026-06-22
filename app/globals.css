@@ -171,14 +171,14 @@ button {
 }
 
 .x-product-card {
-  @apply p-[11px] rounded-[10px] bg-white border-[2px] border-white flex gap-[19px] items-center lg:w-[361.5px] w-full;
+  @apply p-[11px] rounded-[10px] bg-white border-[2px] border-white flex gap-[19px] items-center xl:w-[361.5px] lg:w-[224.6px] md:w-[224.6px] sm:w-full w-full xl:flex-row lg:flex-col flex-col;
 
   &.active {
     @apply border-[#4E2FD2]/70;
   }
 
   .x-product-card__image {
-    @apply w-[101px] min-w-[101px] h-[137px] relative flex items-center justify-center overflow-hidden;
+    @apply xl:w-[101px] xl:min-w-[101px] w-full w-full h-[137px] relative flex items-center justify-center overflow-hidden;
 
     img {
       @apply w-full h-full object-contain object-center;

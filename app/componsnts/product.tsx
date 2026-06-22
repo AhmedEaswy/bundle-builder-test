@@ -38,7 +38,7 @@ export default function Product({ product }: ProductProps) {
           ))}
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center ps-[5px]">
           <div className="flex items-center gap-[4px]">
           <button className="x-product-card__quantity-action">
               <svg

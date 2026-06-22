@@ -19,11 +19,11 @@ export default function Home() {
 
   return (
     <section>
-      <h1 className="lg:text-[31.88px] text-[31.88px] font-normal text-center lg:hidden flex px-[21px] pt-[31px] pb-[20px] tracking-[-0.06px]">
+      <h1 className="lg:text-[31.88px] text-[31.88px] font-bold text-center md:hidden block px-[21px] pt-[31px] pb-[20px] tracking-[-0.06px]">
         Let’s get started!
       </h1>
 
-      <div className="max-w-[1196px] mx-auto my-[49.36px] flex xl:flex-row lg:flex-col flex-col xl:gap-[29px] lg:gap-[33px] gap-0 xl:px-0 lg:px-4 md:px-0 px-0 overflow-hidden">
+      <div className="xl:max-w-[1196px] lg:max-w-[1213px] w-full mx-auto md:my-[49.36px] my-0 flex xl:flex-row lg:flex-col flex-col xl:gap-[29px] lg:gap-[33px] gap-0 overflow-hidden">
         <div className="w-full">
           {categories.map((category, index) => {
             const stepNumber = index + 1;
@@ -80,7 +80,7 @@ export default function Home() {
                       inert={!isActiveStep}
                     >
                       <div className="min-h-0 overflow-hidden">
-                        <div className="md:flex flex-wrap justify-center gap-[15px] grid 2xl:grid-cols-4 xl:grid-cols-5 md:grid-cols-3 grid-cols-1">
+                        <div className="md:flex sm:grid grid grid-cols-2 flex-wrap justify-center gap-[15px]">
                           {category.products.map((product) => (
                             <Product
                               key={createStableKey(
