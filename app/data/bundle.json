@@ -145,7 +145,8 @@
           "old_price": 0,
           "discount_percentage": 0,
           "stock": 20,
-          "is_required": false
+          "is_required": false,
+          "image": "/images/Wyze Sense Hub.png"
         },
         {
           "id": 2,
@@ -155,7 +156,8 @@
           "old_price": 29.92,
           "discount_percentage": 0,
           "stock": 20,
-          "is_required": true
+          "is_required": true,
+          "image": "/images/Wyze Sense Motion Sensor.png"
         }
       ]
     },
@@ -174,7 +176,8 @@
           "old_price": 0,
           "discount_percentage": 0,
           "stock": 20,
-          "is_required": false
+          "is_required": false,
+          "image": "/images/Wyze Sense Motion Sensor.png"
         }
       ]
     }

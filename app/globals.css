@@ -154,7 +154,7 @@ button {
   @apply lg:rounded-[10px] rounded-none bg-[#EDF4FF] transition-all ease-in-out duration-300;
 
   .x-card-main__title {
-    @apply lg:px-[15px] lg:pt-[15px] px-[10px] pt-[10px] pb-[5px] text-[#484848] lg:text-xs text-[10px] !font-medium leading-[1] tracking-[1.6px] uppercase border-b-[0.5px] border-[#1F1F1F];
+    @apply transition-all ease-in-out duration-300 lg:px-[15px] lg:pt-[15px] px-[10px] pt-[10px] pb-[5px] text-[#484848] lg:text-xs text-[10px] !font-medium leading-[1] tracking-[1.6px] uppercase border-b-[0.5px] border-[#1F1F1F];
   }
 
   .x-card-main__body {
@@ -169,7 +169,7 @@ button {
     @apply bg-transparent rounded-none !border-0 !outline-none;
 
     .x-card-main__title {
-      @apply pt-0 lg:mt-[13px] mt-[5px];
+      @apply pt-0 lg:mt-[13px] mt-[5px] text-[10px];
     }
 
     .x-card-main__body {
@@ -217,14 +217,14 @@ button {
     @apply w-full;
 
     .x-product-card__name {
-      @apply text-[#484848] text-base leading-[1] tracking-[0.6px] font-semibold;
+      @apply text-[#1F1F1F] text-base leading-[1] tracking-[0.6px] font-semibold;
     }
 
     .x-product-card__description {
       @apply text-[#1F1F1F]/75 text-xs leading-[130%] tracking-[0.6px] font-medium !mt-2;
 
       a {
-        @apply text-[#0000EE] underline font-medium;
+        @apply text-[#0000EE] underline font-semibold !capitalize;
       }
     }
 
@@ -267,7 +267,7 @@ button {
 
 .x-product-card__quantity-action {
   @apply flex size-5 rounded-[4px] transition-all duration-300 ease-in-out text-[#525963] bg-[#F0F4F7] hover:bg-[#b2accc] hover:text-[#4E2FD2] border-[#F0F4F7]
-  cursor-pointer items-center justify-center disabled:bg-white disabled:border-[2px] disabled:hover:bg-gray-50 disabled:border-[#E6EBF0];
+  cursor-pointer items-center justify-center disabled:bg-white disabled:border-[2px] disabled:hover:bg-gray-50 disabled:border-[#E6EBF0] disabled:text-[#E6EBF0];
 }
 
 .x-transition {

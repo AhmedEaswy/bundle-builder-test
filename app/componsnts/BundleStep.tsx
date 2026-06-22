@@ -74,8 +74,9 @@ export default function BundleStep({
                 alt={category.name}
                 width={26}
                 height={26}
+                loading="eager"
               />
-              <h2 className="text-[#484848] lg:text-[22px] text-lg font-semibold">
+              <h2 className="text-[#0B0D10] lg:text-[22px] text-lg font-semibold">
                 {category.label}
               </h2>
             </div>
@@ -97,6 +98,7 @@ export default function BundleStep({
                 className={`rotate-180 h-[7px] w-[10px] ${isActive ? "rotate-90" : ""}`}
                 width={10}
                 height={7}
+                loading="eager"
               />
             </button>
           </div>

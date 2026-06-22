@@ -62,6 +62,7 @@ export default function Product({
           alt={product.name}
           width={101}
           height={137}
+          loading="eager"
         />
 
         {product.discount_percentage > 0 ? (
@@ -108,6 +109,7 @@ export default function Product({
                     alt={variant.color}
                     width={20}
                     height={20}
+                    loading="eager"
                   />
                   <span>{variant.color}</span>
                 </button>
