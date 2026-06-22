@@ -1,5 +1,8 @@
 This is a [Next.js] Project for bundle-builder frontend take-home test
 
+## Demo (Preview)
+https://ahmedeaswy.github.io/bundle-builder-test/
+
 ## Descisions
 
 Here is some decisions i made as extra task or conflict with UI Design i think it is misses:
