@@ -163,7 +163,7 @@
       "name": "Accessories",
       "key": "accessories",
       "icon_url": "/icons/extra.svg",
-      "label": "Choose your accessories",
+      "label": "Add extra protection",
       "products": [
         {
           "id": 1,

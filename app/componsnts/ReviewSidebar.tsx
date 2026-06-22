@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Image from "next/image";
 import { useUUID as createStableKey } from "../composables/useUUID";
 import type { CategoryItem, ProductItem, ProductVariant } from "../types/items";
@@ -27,6 +28,13 @@ type ReviewTotals = {
   monthly: number;
 };
 
+type ReviewDialog =
+  | "checkout-confirm"
+  | "checkout-success"
+  | "save-success"
+  | "clear-confirm"
+  | null;
+
 type ReviewSidebarProps = {
   categories: CategoryItem[];
   selectedItems: ReviewItem[];
@@ -41,6 +49,9 @@ type ReviewSidebarProps = {
     direction: 1 | -1,
     variantId?: number,
   ) => void;
+  hasSavedSystem: boolean;
+  onSaveSystem: () => void;
+  onClearSavedSystem: () => void;
 };
 
 const getReviewTitle = (item: ReviewItem, isRequired: boolean) => {
@@ -66,8 +77,30 @@ export default function ReviewSidebar({
   isRequiredProduct,
   getProductStock,
   onUpdateQuantity,
+  hasSavedSystem,
+  onSaveSystem,
+  onClearSavedSystem,
 }: ReviewSidebarProps) {
   const hasSelectedItems = selectedItems.length > 0;
+  const [reviewDialog, setReviewDialog] = useState<ReviewDialog>(null);
+
+  const closeReviewDialog = () => {
+    setReviewDialog(null);
+  };
+
+  const confirmCheckout = () => {
+    setReviewDialog("checkout-success");
+  };
+
+  const saveSystemForLater = () => {
+    onSaveSystem();
+    setReviewDialog("save-success");
+  };
+
+  const clearSavedSystem = () => {
+    onClearSavedSystem();
+    closeReviewDialog();
+  };
 
   return (
     <div className="xl:w-[399px] xl:min-w-[399px] lg:w-full min-w-full max-w-full">
@@ -270,15 +303,161 @@ export default function ReviewSidebar({
           ) : null}
 
           <div>
-            <button className="x-btn-primary" disabled={!hasSelectedItems}>
+            <button
+              type="button"
+              className="x-btn-primary"
+              disabled={!hasSelectedItems}
+              onClick={() => setReviewDialog("checkout-confirm")}
+            >
               Checkout
             </button>
           </div>
-          <button className="text-[#484848] p-0 bg-transparent underline text-sm text-center w-full hover:text-[#4E2FD2] x-transition !italic font-normal">
-            Save my system for later
-          </button>
+          <div className="flex justify-center">
+            <button
+              type="button"
+              className="text-[#484848] p-0 bg-transparent underline text-sm text-center hover:text-[#4E2FD2] x-transition !italic font-normal"
+              disabled={!hasSelectedItems}
+              onClick={saveSystemForLater}
+            >
+              Save my system for later
+            </button>
+          </div>
+          <div className="flex justify-center">
+            {hasSavedSystem ? (
+              <button
+                type="button"
+                className="mt-3 flex mx-auto items-center justify-center gap-2 bg-transparent p-0 text-center text-sm font-semibold text-[#aab4c3] x-transition hover:text-[#9b241b]"
+                onClick={() => setReviewDialog("clear-confirm")}
+              >
+                <svg className="size-4 icon icon-tabler icons-tabler-outline icon-tabler-trash" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+                <span>Clear my saved system data</span>
+              </button>
+            ) : null}
+          </div>
+
         </div>
       </div>
+
+      {reviewDialog ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          role="presentation"
+          onClick={closeReviewDialog}
+        >
+          <div
+            className="w-full max-w-[360px] rounded-[10px] bg-white p-6 text-center shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="checkout-dialog-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {reviewDialog === "checkout-confirm" ? (
+              <>
+                <h2
+                  id="checkout-dialog-title"
+                  className="text-[#1F1F1F] text-[22px] font-bold leading-[1.15]"
+                >
+                  Confirm checkout
+                </h2>
+                <p className="mt-3 text-sm leading-[130%] text-[#1F1F1FBF]">
+                  Ready to place your security bundle order for{" "}
+                  {formatCurrency(totals.subtotal)}?
+                </p>
+                <div className="mt-5 flex gap-3">
+                  <button
+                    type="button"
+                    className="x-btn-outline !h-[44px] !w-full !px-3 !text-base"
+                    onClick={closeReviewDialog}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="x-btn-primary !h-[44px]"
+                    onClick={confirmCheckout}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </>
+            ) : null}
+
+            {reviewDialog === "checkout-success" ? (
+              <>
+                <h2
+                  id="checkout-dialog-title"
+                  className="text-[#0AA288] text-[22px] font-bold leading-[1.15]"
+                >
+                  Order confirmed!
+                </h2>
+                <p className="mt-3 text-sm leading-[130%] text-[#1F1F1FBF]">
+                  Your security bundle checkout was successful.
+                </p>
+                <button
+                  type="button"
+                  className="x-btn-primary mt-5"
+                  onClick={closeReviewDialog}
+                >
+                  Done
+                </button>
+              </>
+            ) : null}
+
+            {reviewDialog === "save-success" ? (
+              <>
+                <h2
+                  id="checkout-dialog-title"
+                  className="text-[#0AA288] text-[22px] font-bold leading-[1.15]"
+                >
+                  System saved!
+                </h2>
+                <p className="mt-3 text-sm leading-[130%] text-[#1F1F1FBF]">
+                  Your security system has been saved and will be restored when
+                  you come back.
+                </p>
+                <button
+                  type="button"
+                  className="x-btn-primary mt-5"
+                  onClick={closeReviewDialog}
+                >
+                  Done
+                </button>
+              </>
+            ) : null}
+
+            {reviewDialog === "clear-confirm" ? (
+              <>
+                <h2
+                  id="checkout-dialog-title"
+                  className="text-[#1F1F1F] text-[22px] font-bold leading-[1.15]"
+                >
+                  Clear saved system?
+                </h2>
+                <p className="mt-3 text-sm leading-[130%] text-[#1F1F1FBF]">
+                  This removes the saved system from this browser. Your current
+                  selections will stay on the page.
+                </p>
+                <div className="mt-5 flex gap-3">
+                  <button
+                    type="button"
+                    className="x-btn-outline !h-[44px] !w-full !px-3 !text-base"
+                    onClick={closeReviewDialog}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="x-btn-primary !h-[44px] !bg-[#D8392B] hover:!bg-[#9b241b]"
+                    onClick={clearSavedSystem}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

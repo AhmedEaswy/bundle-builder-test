@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useUUID as createStableKey } from "./composables/useUUID";
 import Product from "./componsnts/product";
@@ -16,6 +16,12 @@ type CartItem = {
 type CartState = Record<string, CartItem>;
 type PreviewVariantState = Record<string, number>;
 
+type SavedSystemState = {
+  cart: CartState;
+  previewVariants: PreviewVariantState;
+  currentStep: number | null;
+};
+
 type SelectedReviewItem = {
   key: string;
   category: CategoryItem;
@@ -29,6 +35,7 @@ type SelectedReviewItem = {
 const shipping = bundleData.shipping;
 const categories = bundleData.categories as CategoryItem[];
 const maxStepLength = categories.length;
+const savedSystemStorageKey = "bundle-builder.saved-system";
 
 const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
 
@@ -76,12 +83,80 @@ const getInitialCart = () =>
     return cart;
   }, {});
 
+const isCartState = (value: unknown): value is CartState => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+
+  return Object.values(value).every((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+
+    const cartItem = item as Partial<CartItem>;
+    return (
+      typeof cartItem.quantity === "number" &&
+      (cartItem.variantId === undefined || typeof cartItem.variantId === "number")
+    );
+  });
+};
+
+const isPreviewVariantState = (value: unknown): value is PreviewVariantState => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+
+  return Object.values(value).every((variantId) => typeof variantId === "number");
+};
+
+const parseSavedSystemState = (value: string | null): SavedSystemState | null => {
+  if (!value) return null;
+
+  try {
+    const savedState = JSON.parse(value) as Partial<SavedSystemState>;
+    const currentStep = savedState.currentStep;
+    const isCurrentStepValid =
+      currentStep === null ||
+      (typeof currentStep === "number" &&
+        currentStep >= 1 &&
+        currentStep <= maxStepLength);
+
+    if (
+      !isCartState(savedState.cart) ||
+      !isPreviewVariantState(savedState.previewVariants) ||
+      !isCurrentStepValid
+    ) {
+      return null;
+    }
+
+    return {
+      cart: savedState.cart,
+      previewVariants: savedState.previewVariants,
+      currentStep,
+    };
+  } catch {
+    return null;
+  }
+};
+
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<number | null>(1);
   const [cart, setCart] = useState<CartState>(() => getInitialCart());
   const [previewVariants, setPreviewVariants] = useState<PreviewVariantState>(
     {},
   );
+  const [hasSavedSystem, setHasSavedSystem] = useState(false);
+
+  useEffect(() => {
+    const savedState = parseSavedSystemState(
+      window.localStorage.getItem(savedSystemStorageKey),
+    );
+
+    if (!savedState) return;
+
+    const restoreSavedSystem = window.setTimeout(() => {
+      setCart(savedState.cart);
+      setPreviewVariants(savedState.previewVariants);
+      setCurrentStep(savedState.currentStep);
+      setHasSavedSystem(true);
+    }, 0);
+
+    return () => window.clearTimeout(restoreSavedSystem);
+  }, []);
 
   const selectedItems = useMemo<SelectedReviewItem[]>(
     () =>
@@ -278,8 +353,23 @@ export default function Home() {
     setCurrentStep((step) => Math.min((step ?? 0) + 1, maxStepLength));
   };
 
-  const goToPreviousStep = () => {
-    setCurrentStep((step) => Math.max((step ?? 2) - 1, 1));
+  const saveSystemForLater = () => {
+    const stateToSave: SavedSystemState = {
+      cart,
+      previewVariants,
+      currentStep,
+    };
+
+    window.localStorage.setItem(
+      savedSystemStorageKey,
+      JSON.stringify(stateToSave),
+    );
+    setHasSavedSystem(true);
+  };
+
+  const clearSavedSystem = () => {
+    window.localStorage.removeItem(savedSystemStorageKey);
+    setHasSavedSystem(false);
   };
 
   return (
@@ -293,9 +383,6 @@ export default function Home() {
           {categories.map((category, index) => {
             const stepNumber = index + 1;
             const isActiveStep = stepNumber === currentStep;
-            const previousCategory = currentStep
-              ? categories[currentStep - 2]
-              : undefined;
             const nextCategory = currentStep
               ? categories[currentStep]
               : undefined;
@@ -442,17 +529,7 @@ export default function Home() {
                           })}
                         </div>
 
-                        <div className="flex justify-center gap-3 mt-[15px]">
-                          {previousCategory ? (
-                            <button
-                              type="button"
-                              className="x-btn-outline"
-                              onClick={goToPreviousStep}
-                            >
-                              Previous: {previousCategory.label}
-                            </button>
-                          ) : null}
-
+                        <div className="flex flex-wrap justify-center gap-3 mt-[15px]">
                           {nextCategory ? (
                             <button
                               type="button"
@@ -481,6 +558,9 @@ export default function Home() {
           isRequiredProduct={isRequiredProduct}
           getProductStock={getProductStock}
           onUpdateQuantity={updateQuantity}
+          hasSavedSystem={hasSavedSystem}
+          onSaveSystem={saveSystemForLater}
+          onClearSavedSystem={clearSavedSystem}
         />
       </div>
     </section>
