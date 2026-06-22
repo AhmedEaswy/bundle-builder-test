@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-UltraLight.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-Thin.ttf") format("truetype");
   font-weight: 100;
   font-style: normal;
   font-display: swap;
@@ -10,7 +10,7 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-Light.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-UltraLight.ttf") format("truetype");
   font-weight: 200;
   font-style: normal;
   font-display: swap;
@@ -18,7 +18,7 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-Regular.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-Light.ttf") format("truetype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -26,7 +26,7 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-Medium.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -34,7 +34,7 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-SemiBold.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -42,7 +42,7 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-Bold.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-SemiBold.ttf") format("truetype");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
@@ -50,7 +50,7 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-ExtraBold.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -58,7 +58,7 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-Black.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-ExtraBold.ttf") format("truetype");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -66,7 +66,7 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-Heavy.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-Black.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -74,8 +74,24 @@
 
 @font-face {
   font-family: "Gilroy";
-  src: url("./assets/Gilroy/Gilroy-Heavy.ttf") format("truetype");
+  src: url("./assets/fonts/Gilroy-Heavy.ttf") format("truetype");
   font-weight: 950;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("./assets/fonts/Gilroy-RegularItalic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "TT Norms Pro";
+  src: url("./assets/fonts/TTNormsPro-Bold.ttf") format("truetype");
+  font-weight: 7000;
   font-style: normal;
   font-display: swap;
 }
@@ -83,6 +99,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --mono: "TT Norms Pro", Arial, Helvetica, sans-serif;
   color-scheme: light;
 }
 
@@ -90,7 +107,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: "Gilroy", Arial, Helvetica, sans-serif;
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--mono);
 }
 
 body {
@@ -98,7 +115,11 @@ body {
   color: var(--foreground);
   font-family: "Gilroy", Arial, Helvetica, sans-serif;
   line-height: 1;
-  @apply font-normal;
+  @apply font-medium;
+}
+
+button {
+  @apply disabled:cursor-not-allowed cursor-pointer;
 }
 
 .x-card-main {
@@ -164,14 +185,14 @@ body {
     @apply w-full;
 
     .x-product-card__name {
-      @apply text-[#484848] text-base leading-[1] tracking-[0.6px] font-medium;
+      @apply text-[#484848] text-base leading-[1] tracking-[0.6px] font-semibold;
     }
 
     .x-product-card__description {
-      @apply text-[#1F1F1F]/75 text-xs leading-[130%] tracking-[0.6px] font-normal !mt-2;
+      @apply text-[#1F1F1F]/75 text-xs leading-[130%] tracking-[0.6px] font-medium !mt-2;
 
       a {
-        @apply text-[#0000EE] underline;
+        @apply text-[#0000EE] underline font-medium;
       }
     }
 
@@ -189,21 +210,30 @@ body {
     }
 
     .x-product-card__price {
-      @apply text-[#575757] text-base font-medium !leading-[1] text-end;
+      @apply text-[#575757] text-base font-normal !leading-[1] text-end;
     }
 
     .x-product-card__old-price {
-      @apply text-[#D8392B] text-base font-medium line-through !leading-[1] text-end;
+      @apply text-[#D8392B] text-base font-normal line-through !leading-[1] text-end;
     }
   }
 }
 
 .x-btn-outline {
-  @apply text-[#4E2FD2] text-lg leading-[24px] text-center font-medium w-[242px] h-[39px] rounded-[7px] font-medium border-[1px]
+  @apply text-[#4E2FD2] text-lg leading-[24px] text-center font-medium w-[242px] h-[39px] rounded-[7px] font-semibold border-[1px]
    border-[#4E2FD2] hover:bg-[#4E2FD2]/10 transition-all duration-300 ease-in-out cursor-pointer hover:bg-[#4E2FD2]/10 min-w-fit w-[242px] !px-6 max-w-full;
 }
 
+.x-btn-primary {
+  @apply text-white font-bold text-[17px] tracking-[0px] leading-[1] py-[13px] h-[48px] w-full text-center !rounded-[4px] bg-[#4E2FD2]
+  duration-300 ease-in-out transition-all font-mono hover:bg-[#2c1884];
+}
+
 .x-product-card__quantity-action {
-  @apply flex size-5 rounded-[4px] transition-all duration-300 ease-in-out text-[#525963] bg-[#F0F4F7] border-[#F0F4F7]
+  @apply flex size-5 rounded-[4px] transition-all duration-300 ease-in-out text-[#525963] bg-[#F0F4F7] hover:bg-[#b2accc] hover:text-[#4E2FD2] border-[#F0F4F7]
   cursor-pointer items-center justify-center disabled:bg-white disabled:border-[2px] disabled:hover:bg-gray-50 disabled:border-[#E6EBF0];
+}
+
+.x-transition {
+  @apply transition-all duration-300 ease-in-out;
 }

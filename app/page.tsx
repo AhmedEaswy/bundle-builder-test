@@ -51,7 +51,7 @@ export default function Home() {
                           width={26}
                           height={26}
                         />
-                        <h2 className="text-[#484848] lg:text-[22px] text-lg font-medium">
+                        <h2 className="text-[#484848] lg:text-[22px] text-lg font-semibold">
                           {category.label}
                         </h2>
                       </div>
@@ -153,11 +153,11 @@ export default function Home() {
                               alt={product.name}
                               width={26}
                               height={26}
-                              className={`object-cover object-center ${category.key === "plans" ? "h-[23px] w-auto" :  "bg-white rounded-[5px] size-[41px]"}`}
+                              className={`object-cover object-center ${category.key === "plans" ? "h-[23px] w-auto" : "bg-white rounded-[5px] size-[41px]"}`}
                             />
 
                             {category.key === "plans" ? null : (
-                            <div className="text-sm leading-[16px] text-[#0B0D10]">
+                              <div className="text-sm leading-[16px] text-[#0B0D10]">
                                 {product.name}
                               </div>
                             )}
@@ -186,7 +186,7 @@ export default function Home() {
                                   </defs>
                                 </svg>
                               </button>
-                              <div className="flex size-5 rounded-[4px] items-center justify-center">
+                              <div className="flex size-5 rounded-[4px] items-center justify-center font-semibold">
                                 0
                               </div>
                               <button className="x-product-card__quantity-action !bg-white hover:!bg-gray-50 disabled:!border-[#CED6DE] disabled:!bg-[#F1F1F2] !text-[#575757]">
@@ -206,12 +206,16 @@ export default function Home() {
                             </div>
                             <div className="flex flex-col items-end justify-end gap-[3px] text-end">
                               {product?.old_price ? (
-                                <div className="text-[#6F7882] text-sm leading-[16px] tracking-[0.6px] font-normal line-through">
-                                  ${product.old_price}{category.key === "plans" ? "/mo" : ""}
+                                <div className="text-[#6F7882] text-sm leading-[16px] tracking-[0.6px] font-medium line-through">
+                                  ${product.old_price}
+                                  {category.key === "plans" ? "/mo" : ""}
                                 </div>
                               ) : null}
-                              <div className="text-[#4E2FD2] text-sm leading-[16px] font-medium text-end">
-                               {product.price === 0 ? "Free" : `$${product.price}`}{category.key === "plans" ? "/mo" : ""}
+                              <div className="text-[#4E2FD2] text-sm leading-[16px] font-semibold text-end uppercase">
+                                {product.price === 0
+                                  ? "Free"
+                                  : `$${product.price}`}
+                                {category.key === "plans" ? "/mo" : ""}
                               </div>
                             </div>
                           </div>
@@ -221,7 +225,81 @@ export default function Home() {
                   </div>
                 </div>
               ))}
-              <div></div>
+
+              {/* Shipping */}
+              <div className="border-t border-[#CED6DE] pt-[15px] pb-[10px]">
+                <div className="flex flex-col gap-3 justify-between">
+                  <div>
+                    <div className="flex justify-between">
+                      <div className="flex items-center gap-3 w-1/2">
+                        <Image
+                          src={shipping.image || "/file.svg"}
+                          alt={shipping.name}
+                          width={26}
+                          height={26}
+                          className={`object-cover object-center bg-white rounded-[5px] size-[41px]`}
+                        />
+
+                        <div className="text-sm leading-[16px] text-[#0B0D10]">
+                          {shipping.name}
+                        </div>
+                      </div>
+
+                      <div className="flex items-end gap-4 justify-end">
+                        <div className="flex flex-col items-end justify-end gap-[3px] text-end">
+                          {shipping?.old_price ? (
+                            <div className="text-[#6F7882] text-sm leading-[16px] tracking-[0.6px] font-medium line-through">
+                              ${shipping.old_price}
+                            </div>
+                          ) : null}
+                          <div className="text-[#4E2FD2] text-sm leading-[16px] font-semibold text-end uppercase">
+                            {shipping.price === 0
+                              ? "Free"
+                              : `$${shipping.price}`}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Protection */}
+              <div className="flex items-start justify-between gap-2">
+                <Image
+                  src="/icons/protection.svg"
+                  alt="Protection"
+                  className="size-[78px]"
+                  width={78}
+                  height={78}
+                />
+
+                <div>
+                  <span className="mt-[10px] bg-[#4E2FD2] h-[18px] flex items-center font-medium rounded-[3px] py-[5px] px-[8px] text-white tracking-[-5%] leading-[1] text-xs">
+                    as low as $19.19/mo
+                  </span>
+
+                  <div className="flex items-start gap-2">
+                    <span className="text-[#6F7882] text-lg leading-[20px] tracking-[0.25%] font-medium line-through pt-2">
+                      $238.81
+                    </span>
+                    <span className="font-bold text-xl leading-[32px] leading-[-0.13%] text-[#4E2FD2]">
+                      $187.89
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-[#0AA288] text-xs leading-[1] font-semibold text-center mt-[14px] mb-[4px]">
+                Congrats! You’re saving $50.92 on your security bundle!
+              </div>
+
+              <div>
+                <button className="x-btn-primary">Checkout</button>
+              </div>
+              <button className="text-[#484848] p-0 bg-transparent underline text-sm text-center w-full hover:text-[#4E2FD2] x-transition !italic font-normal">
+                Save my system for later
+              </button>
             </div>
           </div>
         </div>
@@ -229,6 +307,14 @@ export default function Home() {
     </section>
   );
 }
+
+const shipping = {
+  id: 1,
+  name: "Fast Shipping",
+  price: 0,
+  old_price: 5.99,
+  image: "/icons/shipping.svg",
+};
 
 const cameras: ProductItem[] = [
   {
@@ -337,7 +423,7 @@ const plans: ProductItem[] = [
     old_price: 12.99,
     discount_percentage: 22,
     stock: 20,
-    image: '/images/plan.svg',
+    image: "/images/plan.svg",
   },
 ];
 
