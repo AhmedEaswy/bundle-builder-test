@@ -82,7 +82,7 @@ export default function Product({
 
         {product.variants?.length ? (
           <Swiper
-            className="x-product-card__variants"
+            className="x-product-card__variants lg:!h-auto md:!h-[28px] !h-[28px]"
             slidesPerView="auto"
             spaceBetween={6}
             watchOverflow
