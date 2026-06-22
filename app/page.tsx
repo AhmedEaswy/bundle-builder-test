@@ -33,9 +33,10 @@ const emptyTotals: ReviewTotals = {
   savings: 0,
   monthly: 0,
 };
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const fetchBundle = async () => {
-  const response = await fetch("/api/bundle");
+  const response = await fetch(`${basePath}/api/bundle`);
   if (!response.ok) {
     throw new Error("Unable to load bundle data.");
   }
