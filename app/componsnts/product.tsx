@@ -3,30 +3,91 @@ import type { ProductItem } from "../types/items";
 
 type ProductProps = {
   product: ProductItem;
+  quantity: number;
+  isSelected: boolean;
+  previewVariantId?: number;
+  hideQuantityActions?: boolean;
+  isRequired?: boolean;
+  canIncrement: boolean;
+  canDecrement: boolean;
+  onIncrement: () => void;
+  onDecrement: () => void;
+  onSelectProduct?: () => void;
+  onSelectVariant: (variantId: number) => void;
 };
 
-export default function Product({ product }: ProductProps) {
+export default function Product({
+  product,
+  quantity,
+  isSelected,
+  previewVariantId,
+  hideQuantityActions = false,
+  isRequired = false,
+  canIncrement,
+  canDecrement,
+  onIncrement,
+  onDecrement,
+  onSelectProduct,
+  onSelectVariant,
+}: ProductProps) {
+  const previewVariant = product.variants?.find(
+    (variant) => variant.id === previewVariantId,
+  );
+  const productImage = previewVariant?.image ?? product.image ?? "/file.svg";
+
   return (
-    <div className="x-product-card">
+    <div
+      className={`x-product-card ${isSelected ? "active" : ""} ${
+        hideQuantityActions ? "cursor-pointer" : ""
+      }`}
+      onClick={hideQuantityActions ? onSelectProduct : undefined}
+      role={hideQuantityActions ? "button" : undefined}
+      tabIndex={hideQuantityActions ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (!hideQuantityActions || !onSelectProduct) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelectProduct();
+        }
+      }}
+    >
       <div className="x-product-card__image">
         <Image
-          src={product.image ?? "/file.svg"}
+          src={productImage}
           alt={product.name}
           width={101}
           height={137}
         />
 
-        <div className="x-product-card__discount">Save {product.discount_percentage}%</div>
+        {product.discount_percentage > 0 ? (
+          <div className="x-product-card__discount">
+            Save {product.discount_percentage}%
+          </div>
+        ) : null}
       </div>
       <div className="x-product-card__content">
-        <div className="x-product-card__name">{product.name}</div>
+        <div className="x-product-card__name">
+          {product.name}
+          {isRequired ? " (required)" : ""}
+        </div>
         <div className="x-product-card__description">
           {product.description} <a href="#">Learn more</a>
         </div>
 
         <div className="mt-[8px] mb-[10px] flex gap-[6px] flex-wrap">
           {product.variants?.map((variant) => (
-            <div key={variant.id} className="x-product-card__variant">
+            <button
+              key={variant.id}
+              type="button"
+              className={`x-product-card__variant ${
+                previewVariantId === variant.id ? "active" : ""
+              }`}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelectVariant(variant.id);
+              }}
+              disabled={variant.stock <= 0}
+            >
               <Image
                 src={variant.image}
                 alt={variant.color}
@@ -34,13 +95,22 @@ export default function Product({ product }: ProductProps) {
                 height={20}
               />
               <span>{variant.color}</span>
-            </div>
+            </button>
           ))}
         </div>
 
         <div className="flex justify-between items-center ps-[5px]">
-          <div className="flex items-center gap-[4px]">
-          <button className="x-product-card__quantity-action">
+          {hideQuantityActions ? null : (
+            <div className="flex items-center gap-[4px]">
+              <button
+                type="button"
+                className="x-product-card__quantity-action"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDecrement();
+                }}
+                disabled={!canDecrement}
+              >
               <svg
                 width="8"
                 height="10"
@@ -55,9 +125,17 @@ export default function Product({ product }: ProductProps) {
               </svg>
             </button>
             <div className="flex size-5 rounded-[4px] items-center justify-center">
-              0
+              {quantity}
             </div>
-            <button className="x-product-card__quantity-action">
+            <button
+              type="button"
+              className="x-product-card__quantity-action"
+              onClick={(event) => {
+                event.stopPropagation();
+                onIncrement();
+              }}
+              disabled={!canIncrement}
+            >
               <svg
                 width="8"
                 height="8"
@@ -79,7 +157,8 @@ export default function Product({ product }: ProductProps) {
               </svg>
             </button>
 
-          </div>
+            </div>
+          )}
 
           <div className="flex flex-col items-center gap-[3px]">
             {product?.old_price ? (

@@ -15,6 +15,7 @@ export type ProductItem = {
   old_price?: number;
   stock?: number;
   required?: boolean;
+  is_required?: boolean;
   variants?: ProductVariant[];
 };
 

@@ -126,7 +126,7 @@ button {
   @apply lg:rounded-[10px] rounded-none bg-[#EDF4FF] transition-all ease-in-out duration-300;
 
   .x-card-main__title {
-    @apply lg:px-[15px] lg:pt-[15px] px-[10px] pt-[10px] pb-[5px] text-[#484848] text-xs !font-medium leading-[1] tracking-[1.6px] uppercase border-b-[0.5px] border-[#1F1F1F];
+    @apply lg:px-[15px] lg:pt-[15px] px-[10px] pt-[10px] pb-[5px] text-[#484848] lg:text-xs text-[10px] !font-medium leading-[1] tracking-[1.6px] uppercase border-b-[0.5px] border-[#1F1F1F];
   }
 
   .x-card-main__body {
@@ -141,7 +141,7 @@ button {
     @apply bg-transparent rounded-none !border-0 !outline-none;
 
     .x-card-main__title {
-      @apply pt-0 lg:mt-[13px] mt-[0px];
+      @apply pt-0 lg:mt-[13px] mt-[5px];
     }
 
     .x-card-main__body {
@@ -206,7 +206,7 @@ button {
 
     .x-product-card__variant {
       @apply flex items-center h-[26px] border-[0.5px] border-[#CCCCCC] rounded-[2px] gap-[4px] hover:bg-[#1DF0BB0A]/50
-      text-[#1F1F1F] text-xs font-medium px-[5.5px] transition-all duration-300 ease-in-out cursor-pointer;
+      text-[#1F1F1F] text-xs font-medium px-[5.5px] transition-all duration-300 ease-in-out cursor-pointer bg-white;
 
       &.active {
         @apply bg-[#1DF0BB0A] border-[#0AA288]
