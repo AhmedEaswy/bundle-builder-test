@@ -181,7 +181,7 @@ export default function Product({
           )}
           </div>
 
-          <div className="flex flex-col items-center gap-[3px]">
+          <div className="flex flex-col items-center gap-[3px] items-end">
             {product?.old_price ? (
               <div className="x-product-card__old-price">
                 {formatCurrency(product.old_price)}
