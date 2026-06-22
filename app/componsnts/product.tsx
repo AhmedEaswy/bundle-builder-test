@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { formatProductPeriod } from "../lib/bundle";
 import type { ProductItem } from "../types/items";
 
 type ProductProps = {
@@ -14,6 +16,7 @@ type ProductProps = {
   onDecrement: () => void;
   onSelectProduct?: () => void;
   onSelectVariant: (variantId: number) => void;
+  formatCurrency: (value: number) => string;
 };
 
 export default function Product({
@@ -29,11 +32,13 @@ export default function Product({
   onDecrement,
   onSelectProduct,
   onSelectVariant,
+  formatCurrency,
 }: ProductProps) {
   const previewVariant = product.variants?.find(
     (variant) => variant.id === previewVariantId,
   );
   const productImage = previewVariant?.image ?? product.image ?? "/file.svg";
+  const productPeriod = formatProductPeriod(product.period);
 
   return (
     <div
@@ -74,32 +79,45 @@ export default function Product({
           {product.description} <a href="#">Learn more</a>
         </div>
 
-        <div className="mt-[8px] mb-[10px] flex gap-[6px] flex-wrap">
-          {product.variants?.map((variant) => (
-            <button
-              key={variant.id}
-              type="button"
-              className={`x-product-card__variant ${
-                previewVariantId === variant.id ? "active" : ""
-              }`}
-              onClick={(event) => {
-                event.stopPropagation();
-                onSelectVariant(variant.id);
-              }}
-              disabled={variant.stock <= 0}
-            >
-              <Image
-                src={variant.image}
-                alt={variant.color}
-                width={20}
-                height={20}
-              />
-              <span>{variant.color}</span>
-            </button>
-          ))}
-        </div>
+        {product.variants?.length ? (
+          <Swiper
+            className="x-product-card__variants"
+            slidesPerView="auto"
+            spaceBetween={6}
+            watchOverflow
+            onClick={(swiper, event) => event.stopPropagation()}
+          >
+            {product.variants.map((variant) => (
+              <SwiperSlide
+                key={variant.id}
+                className="x-product-card__variant-slide"
+              >
+                <button
+                  type="button"
+                  className={`x-product-card__variant ${
+                    previewVariantId === variant.id ? "active" : ""
+                  }`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onSelectVariant(variant.id);
+                  }}
+                  disabled={variant.stock <= 0}
+                >
+                  <Image
+                    src={variant.image}
+                    alt={variant.color}
+                    width={20}
+                    height={20}
+                  />
+                  <span>{variant.color}</span>
+                </button>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        ) : null}
 
-        <div className="flex justify-between items-center ps-[5px]">
+        <div className="flex justify-between items-center ps-[5px] pt-[5px]">
+          <div>
           {hideQuantityActions ? null : (
             <div className="flex items-center gap-[4px]">
               <button
@@ -159,14 +177,19 @@ export default function Product({
 
             </div>
           )}
+          </div>
 
           <div className="flex flex-col items-center gap-[3px]">
             {product?.old_price ? (
               <div className="x-product-card__old-price">
-                ${product.old_price}
+                {formatCurrency(product.old_price)}
+                {productPeriod}
               </div>
             ) : null}
-            <div className="x-product-card__price">${product.price}</div>
+            <div className="x-product-card__price">
+              {formatCurrency(product.price)}
+              {productPeriod}
+            </div>
           </div>
         </div>
       </div>

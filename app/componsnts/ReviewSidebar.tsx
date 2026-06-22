@@ -1,43 +1,18 @@
 import { useState } from "react";
 import Image from "next/image";
+import ReviewDialog, { type ReviewDialogType } from "./ReviewDialog";
 import { useUUID as createStableKey } from "../composables/useUUID";
-import type { CategoryItem, ProductItem, ProductVariant } from "../types/items";
-
-type ShippingItem = {
-  id: number;
-  name: string;
-  price: number;
-  old_price?: number;
-  image?: string;
-};
-
-type ReviewItem = {
-  key: string;
-  category: CategoryItem;
-  product: ProductItem;
-  quantity: number;
-  variantId?: number;
-  variant?: ProductVariant;
-  image: string;
-};
-
-type ReviewTotals = {
-  subtotal: number;
-  oldSubtotal: number;
-  savings: number;
-  monthly: number;
-};
-
-type ReviewDialog =
-  | "checkout-confirm"
-  | "checkout-success"
-  | "save-success"
-  | "clear-confirm"
-  | null;
+import { formatProductPeriod, getComparableOldPrice } from "../lib/bundle";
+import type {
+  ReviewTotals,
+  SelectedReviewItem,
+  ShippingItem,
+} from "../types/bundle";
+import type { CategoryItem, ProductItem } from "../types/items";
 
 type ReviewSidebarProps = {
   categories: CategoryItem[];
-  selectedItems: ReviewItem[];
+  selectedItems: SelectedReviewItem[];
   shipping: ShippingItem;
   totals: ReviewTotals;
   formatCurrency: (value: number) => string;
@@ -54,7 +29,7 @@ type ReviewSidebarProps = {
   onClearSavedSystem: () => void;
 };
 
-const getReviewTitle = (item: ReviewItem, isRequired: boolean) => {
+const getReviewTitle = (item: SelectedReviewItem, isRequired: boolean) => {
   const labels = [
     item.variant ? item.variant.color : null,
     isRequired ? "required" : null,
@@ -64,9 +39,6 @@ const getReviewTitle = (item: ReviewItem, isRequired: boolean) => {
 
   return `${item.product.name} (${labels.join(", ")})`;
 };
-
-const getComparableOldPrice = (price: number, oldPrice?: number) =>
-  oldPrice && oldPrice > price ? oldPrice : price;
 
 export default function ReviewSidebar({
   categories,
@@ -82,7 +54,10 @@ export default function ReviewSidebar({
   onClearSavedSystem,
 }: ReviewSidebarProps) {
   const hasSelectedItems = selectedItems.length > 0;
-  const [reviewDialog, setReviewDialog] = useState<ReviewDialog>(null);
+  const [reviewDialog, setReviewDialog] = useState<ReviewDialogType>(null);
+  const selectedPlanPeriod = formatProductPeriod(
+    selectedItems.find((item) => item.category.key === "plans")?.product.period,
+  );
 
   const closeReviewDialog = () => {
     setReviewDialog(null);
@@ -105,8 +80,8 @@ export default function ReviewSidebar({
   return (
     <div className="xl:w-[399px] xl:min-w-[399px] lg:w-full min-w-full max-w-full">
       <div className="x-card-main md">
-        <div className="x-card-main__title">Review</div>
-        <div className="x-card-main__body">
+        <div className="x-card-main__title xl:flex md:hidden sm:flex flex">Review</div>
+        <div className="x-card-main__body xl:!p-5 lg:!px-[61px] !px-5 lg:!py-[35px] !py-5">
           <h2 className="text-[22px] text-[#1F1F1F] leading-[1] tracking-[0.6px] font-medium">
             Your security system
           </h2>
@@ -143,6 +118,7 @@ export default function ReviewSidebar({
                       getComparableOldPrice(product.price, product.old_price) *
                       quantity;
                     const lineTotal = product.price * quantity;
+                    const productPeriod = formatProductPeriod(product.period);
 
                     return (
                       <div key={item.key}>
@@ -209,14 +185,14 @@ export default function ReviewSidebar({
                               {oldLineTotal > lineTotal ? (
                                 <div className="text-[#6F7882] text-sm leading-[16px] tracking-[0.6px] font-medium line-through">
                                   {formatCurrency(oldLineTotal)}
-                                  {category.key === "plans" ? "/mo" : ""}
+                                  <span className="lowercase">{productPeriod}</span>
                                 </div>
                               ) : null}
                               <div className="text-[#4E2FD2] text-sm leading-[16px] font-semibold text-end uppercase">
                                 {lineTotal === 0
                                   ? "Free"
                                   : formatCurrency(lineTotal)}
-                                {category.key === "plans" ? "/mo" : ""}
+                                <span className="lowercase">{productPeriod}</span>
                               </div>
                             </div>
                           </div>
@@ -277,9 +253,10 @@ export default function ReviewSidebar({
               height={78}
             />
 
-            <div>
-              <span className="mt-[10px] bg-[#4E2FD2] h-[18px] flex items-center font-medium rounded-[3px] py-[5px] px-[8px] text-white tracking-[-5%] leading-[1] text-xs">
-                as low as {formatCurrency(totals.monthly)}/mo
+            <div className="flex flex-col items-end">
+              <span className="w-fit text-end mt-[10px] bg-[#4E2FD2] h-[18px] flex items-center font-medium rounded-[3px] py-[5px] px-[8px] text-white tracking-[-5%] leading-[1] text-xs">
+                as low as {formatCurrency(totals.monthly)}
+                {selectedPlanPeriod}
               </span>
 
               <div className="flex items-start gap-2">
@@ -338,126 +315,13 @@ export default function ReviewSidebar({
         </div>
       </div>
 
-      {reviewDialog ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
-          role="presentation"
-          onClick={closeReviewDialog}
-        >
-          <div
-            className="w-full max-w-[360px] rounded-[10px] bg-white p-6 text-center shadow-xl"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="checkout-dialog-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            {reviewDialog === "checkout-confirm" ? (
-              <>
-                <h2
-                  id="checkout-dialog-title"
-                  className="text-[#1F1F1F] text-[22px] font-bold leading-[1.15]"
-                >
-                  Confirm checkout
-                </h2>
-                <p className="mt-3 text-sm leading-[130%] text-[#1F1F1FBF]">
-                  Ready to place your security bundle order for{" "}
-                  {formatCurrency(totals.subtotal)}?
-                </p>
-                <div className="mt-5 flex gap-3">
-                  <button
-                    type="button"
-                    className="x-btn-outline !h-[44px] !w-full !px-3 !text-base"
-                    onClick={closeReviewDialog}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="x-btn-primary !h-[44px]"
-                    onClick={confirmCheckout}
-                  >
-                    Confirm
-                  </button>
-                </div>
-              </>
-            ) : null}
-
-            {reviewDialog === "checkout-success" ? (
-              <>
-                <h2
-                  id="checkout-dialog-title"
-                  className="text-[#0AA288] text-[22px] font-bold leading-[1.15]"
-                >
-                  Order confirmed!
-                </h2>
-                <p className="mt-3 text-sm leading-[130%] text-[#1F1F1FBF]">
-                  Your security bundle checkout was successful.
-                </p>
-                <button
-                  type="button"
-                  className="x-btn-primary mt-5"
-                  onClick={closeReviewDialog}
-                >
-                  Done
-                </button>
-              </>
-            ) : null}
-
-            {reviewDialog === "save-success" ? (
-              <>
-                <h2
-                  id="checkout-dialog-title"
-                  className="text-[#0AA288] text-[22px] font-bold leading-[1.15]"
-                >
-                  System saved!
-                </h2>
-                <p className="mt-3 text-sm leading-[130%] text-[#1F1F1FBF]">
-                  Your security system has been saved and will be restored when
-                  you come back.
-                </p>
-                <button
-                  type="button"
-                  className="x-btn-primary mt-5"
-                  onClick={closeReviewDialog}
-                >
-                  Done
-                </button>
-              </>
-            ) : null}
-
-            {reviewDialog === "clear-confirm" ? (
-              <>
-                <h2
-                  id="checkout-dialog-title"
-                  className="text-[#1F1F1F] text-[22px] font-bold leading-[1.15]"
-                >
-                  Clear saved system?
-                </h2>
-                <p className="mt-3 text-sm leading-[130%] text-[#1F1F1FBF]">
-                  This removes the saved system from this browser. Your current
-                  selections will stay on the page.
-                </p>
-                <div className="mt-5 flex gap-3">
-                  <button
-                    type="button"
-                    className="x-btn-outline !h-[44px] !w-full !px-3 !text-base"
-                    onClick={closeReviewDialog}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="x-btn-primary !h-[44px] !bg-[#D8392B] hover:!bg-[#9b241b]"
-                    onClick={clearSavedSystem}
-                  >
-                    Clear
-                  </button>
-                </div>
-              </>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+      <ReviewDialog
+        dialog={reviewDialog}
+        subtotalLabel={formatCurrency(totals.subtotal)}
+        onClose={closeReviewDialog}
+        onConfirmCheckout={confirmCheckout}
+        onClearSavedSystem={clearSavedSystem}
+      />
     </div>
   );
 }

@@ -1,252 +1,125 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import { useUUID as createStableKey } from "./composables/useUUID";
-import Product from "./componsnts/product";
+import BundleSkeleton from "./componsnts/BundleSkeleton";
+import BundleStep from "./componsnts/BundleStep";
 import ReviewSidebar from "./componsnts/ReviewSidebar";
-import bundleData from "./data/bundle.json";
-import type { CategoryItem, ProductItem, ProductVariant } from "./types/items";
+import {
+  formatCurrency,
+  getBundleTotals,
+  getCartKey,
+  getDefaultVariantId,
+  getInitialCart,
+  getProductStock,
+  getSelectedCountByCategory,
+  getSelectedItems,
+  isRequiredProduct,
+  parseSavedSystemState,
+  savedSystemStorageKey,
+} from "./lib/bundle";
+import type {
+  BundleApiResponse,
+  BundleData,
+  CartState,
+  PreviewVariantState,
+  ReviewTotals,
+  SavedSystemState,
+} from "./types/bundle";
+import type { CategoryItem, ProductItem } from "./types/items";
 
-type CartItem = {
-  quantity: number;
-  variantId?: number;
+const emptyTotals: ReviewTotals = {
+  subtotal: 0,
+  oldSubtotal: 0,
+  savings: 0,
+  monthly: 0,
 };
 
-type CartState = Record<string, CartItem>;
-type PreviewVariantState = Record<string, number>;
-
-type SavedSystemState = {
-  cart: CartState;
-  previewVariants: PreviewVariantState;
-  currentStep: number | null;
-};
-
-type SelectedReviewItem = {
-  key: string;
-  category: CategoryItem;
-  product: ProductItem;
-  quantity: number;
-  variantId?: number;
-  variant?: ProductVariant;
-  image: string;
-};
-
-const shipping = bundleData.shipping;
-const categories = bundleData.categories as CategoryItem[];
-const maxStepLength = categories.length;
-const savedSystemStorageKey = "bundle-builder.saved-system";
-
-const formatCurrency = (value: number) => `$${value.toFixed(2)}`;
-
-const getComparableOldPrice = (price: number, oldPrice?: number) =>
-  oldPrice && oldPrice > price ? oldPrice : price;
-
-const isRequiredProduct = (product: ProductItem) =>
-  Boolean(product.required || product.is_required);
-
-const getCartKey = (
-  category: CategoryItem,
-  product: ProductItem,
-  variantId?: number,
-) => createStableKey(`${category.key}-${product.id}-${variantId ?? "default"}`);
-
-const getSelectedVariant = (product: ProductItem, variantId?: number) =>
-  product.variants?.find((variant) => variant.id === variantId);
-
-const getDefaultVariantId = (product: ProductItem) => product.variants?.[0]?.id;
-
-const getProductStock = (product: ProductItem, variantId?: number) => {
-  const variant = getSelectedVariant(product, variantId);
-
-  return variant?.stock ?? product.stock ?? 0;
-};
-
-const getProductImage = (product: ProductItem, variantId?: number) =>
-  getSelectedVariant(product, variantId)?.image ?? product.image ?? "/file.svg";
-
-const getInitialCart = () =>
-  categories.reduce<CartState>((cart, category) => {
-    category.products.forEach((product) => {
-      if (!isRequiredProduct(product)) return;
-
-      const variantId = getDefaultVariantId(product);
-      const stock = getProductStock(product, variantId);
-      if (stock <= 0) return;
-
-      cart[getCartKey(category, product, variantId)] = {
-        quantity: 1,
-        variantId,
-      };
-    });
-
-    return cart;
-  }, {});
-
-const isCartState = (value: unknown): value is CartState => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-
-  return Object.values(value).every((item) => {
-    if (!item || typeof item !== "object" || Array.isArray(item)) return false;
-
-    const cartItem = item as Partial<CartItem>;
-    return (
-      typeof cartItem.quantity === "number" &&
-      (cartItem.variantId === undefined || typeof cartItem.variantId === "number")
-    );
-  });
-};
-
-const isPreviewVariantState = (value: unknown): value is PreviewVariantState => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-
-  return Object.values(value).every((variantId) => typeof variantId === "number");
-};
-
-const parseSavedSystemState = (value: string | null): SavedSystemState | null => {
-  if (!value) return null;
-
-  try {
-    const savedState = JSON.parse(value) as Partial<SavedSystemState>;
-    const currentStep = savedState.currentStep;
-    const isCurrentStepValid =
-      currentStep === null ||
-      (typeof currentStep === "number" &&
-        currentStep >= 1 &&
-        currentStep <= maxStepLength);
-
-    if (
-      !isCartState(savedState.cart) ||
-      !isPreviewVariantState(savedState.previewVariants) ||
-      !isCurrentStepValid
-    ) {
-      return null;
-    }
-
-    return {
-      cart: savedState.cart,
-      previewVariants: savedState.previewVariants,
-      currentStep,
-    };
-  } catch {
-    return null;
+const fetchBundle = async () => {
+  const response = await fetch("/api/bundle");
+  if (!response.ok) {
+    throw new Error("Unable to load bundle data.");
   }
+
+  const apiResponse = (await response.json()) as BundleApiResponse;
+  if (apiResponse.status !== "success") {
+    throw new Error(apiResponse.message);
+  }
+
+  return apiResponse.results;
 };
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<number | null>(1);
-  const [cart, setCart] = useState<CartState>(() => getInitialCart());
+  const [bundle, setBundle] = useState<BundleData | null>(null);
+  const [bundleError, setBundleError] = useState<string | null>(null);
+  const [cart, setCart] = useState<CartState>({});
   const [previewVariants, setPreviewVariants] = useState<PreviewVariantState>(
     {},
   );
   const [hasSavedSystem, setHasSavedSystem] = useState(false);
 
+  const categories = useMemo(() => bundle?.categories ?? [], [bundle]);
+  const shipping = bundle?.shipping;
+  const maxStepLength = categories.length;
+
   useEffect(() => {
-    const savedState = parseSavedSystemState(
-      window.localStorage.getItem(savedSystemStorageKey),
-    );
+    let isMounted = true;
 
-    if (!savedState) return;
+    const loadBundle = async () => {
+      try {
+        const nextBundle = await fetchBundle();
+        const savedState = parseSavedSystemState(
+          window.localStorage.getItem(savedSystemStorageKey),
+          nextBundle.categories.length,
+        );
 
-    const restoreSavedSystem = window.setTimeout(() => {
-      setCart(savedState.cart);
-      setPreviewVariants(savedState.previewVariants);
-      setCurrentStep(savedState.currentStep);
-      setHasSavedSystem(true);
-    }, 0);
+        if (!isMounted) return;
 
-    return () => window.clearTimeout(restoreSavedSystem);
+        setBundle(nextBundle);
+        setBundleError(null);
+
+        if (savedState) {
+          setCart(savedState.cart);
+          setPreviewVariants(savedState.previewVariants);
+          setCurrentStep(savedState.currentStep);
+          setHasSavedSystem(true);
+          return;
+        }
+
+        setCart(getInitialCart(nextBundle.categories));
+        setPreviewVariants({});
+        setCurrentStep(1);
+        setHasSavedSystem(false);
+      } catch (error) {
+        if (!isMounted) return;
+
+        setBundleError(
+          error instanceof Error ? error.message : "Unable to load bundle data.",
+        );
+      }
+    };
+
+    loadBundle();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const selectedItems = useMemo<SelectedReviewItem[]>(
-    () =>
-      categories.flatMap((category) =>
-        category.products.flatMap((product) => {
-          if (product.variants?.length) {
-            return product.variants.flatMap((variant) => {
-              const key = getCartKey(category, product, variant.id);
-              const cartItem = cart[key];
-              if (!cartItem?.quantity) return [];
-
-              return [
-                {
-                  key,
-                  category,
-                  product,
-                  quantity: cartItem.quantity,
-                  variantId: variant.id,
-                  variant,
-                  image: variant.image,
-                },
-              ];
-            });
-          }
-
-          const key = getCartKey(category, product);
-          const cartItem = cart[key];
-          if (!cartItem?.quantity) return [];
-
-          return [
-            {
-              key,
-              category,
-              product,
-              quantity: cartItem.quantity,
-              image: getProductImage(product),
-            },
-          ];
-        }),
-      ),
-    [cart],
+  const selectedItems = useMemo(
+    () => getSelectedItems(categories, cart),
+    [cart, categories],
   );
 
   const selectedCountByCategory = useMemo(
-    () =>
-      categories.reduce<Record<string, number>>((counts, category) => {
-        counts[category.key] = category.products.reduce((total, product) => {
-          const hasSelectedProduct = product.variants?.length
-            ? product.variants.some(
-                (variant) =>
-                  (cart[getCartKey(category, product, variant.id)]?.quantity ??
-                    0) > 0,
-              )
-            : (cart[getCartKey(category, product)]?.quantity ?? 0) > 0;
-
-          return total + (hasSelectedProduct ? 1 : 0);
-        }, 0);
-
-        return counts;
-      }, {}),
-    [cart],
+    () => getSelectedCountByCategory(categories, cart),
+    [cart, categories],
   );
 
-  const totals = useMemo(() => {
-    const productsSubtotal = selectedItems.reduce(
-      (total, item) => total + item.product.price * item.quantity,
-      0,
-    );
-    const productsOldSubtotal = selectedItems.reduce(
-      (total, item) =>
-        total +
-        getComparableOldPrice(item.product.price, item.product.old_price) *
-          item.quantity,
-      0,
-    );
-    const hasSelectedItems = selectedItems.length > 0;
-    const subtotal = productsSubtotal + (hasSelectedItems ? shipping.price : 0);
-    const oldSubtotal =
-      productsOldSubtotal +
-      (hasSelectedItems
-        ? getComparableOldPrice(shipping.price, shipping.old_price)
-        : 0);
-
-    return {
-      subtotal,
-      oldSubtotal,
-      savings: Math.max(oldSubtotal - subtotal, 0),
-      monthly: subtotal / 10,
-    };
-  }, [selectedItems]);
+  const totals = useMemo(
+    () => (shipping ? getBundleTotals(selectedItems, shipping) : emptyTotals),
+    [selectedItems, shipping],
+  );
 
   const updateQuantity = (
     category: CategoryItem,
@@ -311,12 +184,10 @@ export default function Home() {
     product: ProductItem,
     variantId: number,
   ) => {
-    setPreviewVariants((previousVariants) => {
-      return {
-        ...previousVariants,
-        [getCartKey(category, product)]: variantId,
-      };
-    });
+    setPreviewVariants((previousVariants) => ({
+      ...previousVariants,
+      [getCartKey(category, product)]: variantId,
+    }));
   };
 
   const togglePlan = (category: CategoryItem, product: ProductItem) => {
@@ -372,6 +243,18 @@ export default function Home() {
     setHasSavedSystem(false);
   };
 
+  if (bundleError) {
+    return (
+      <section className="px-5 py-10 text-center text-[#D8392B]">
+        {bundleError}
+      </section>
+    );
+  }
+
+  if (!bundle || !shipping) {
+    return <BundleSkeleton />;
+  }
+
   return (
     <section>
       <h1 className="lg:text-[31.88px] text-[31.88px] font-bold text-center md:hidden block px-[21px] pt-[31px] pb-[20px] tracking-[-0.06px]">
@@ -386,165 +269,27 @@ export default function Home() {
             const nextCategory = currentStep
               ? categories[currentStep]
               : undefined;
-            const categoryKey = createStableKey(category.id, category.name);
-            const selectedCount = selectedCountByCategory[category.key] ?? 0;
 
             return (
-              <div
-                key={categoryKey}
-                className="transition-[padding-top] duration-300 ease-in-out"
-                style={{
-                  paddingTop: isActiveStep && index > 0 ? 13 : 0,
-                }}
-              >
-                {" "}
-                <div
-                  className={`x-card-main ${isActiveStep ? "" : "outline"}`}
-                  aria-expanded={isActiveStep}
-                >
-                  <div className="x-card-main__title">{`Step ${stepNumber} of ${maxStepLength}`}</div>
-                  <div className="x-card-main__body">
-                    {/* Step title */}
-                    <div
-                      className={`flex justify-between cursor-pointer ${isActiveStep ? "pb-[15px]" : ""}`}
-                      onClick={() =>
-                        setCurrentStep(isActiveStep ? null : stepNumber)
-                      }
-                    >
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src={category.icon_url}
-                          alt={category.name}
-                          width={26}
-                          height={26}
-                        />
-                        <h2 className="text-[#484848] lg:text-[22px] text-lg font-semibold">
-                          {category.label}
-                        </h2>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="text-[#4E2FD2] text-sm font-medium flex items-center gap-1 bg-transparent p-0"
-                        aria-label={`Show ${category.name} step`}
-                      >
-                        {selectedCount > 0 ? (
-                          <>
-                            <span>{selectedCount}</span>
-                            <span>selected</span>
-                          </>
-                        ) : null}
-                        <Image
-                          src="/icons/arrow.svg"
-                          alt="Arrow right"
-                          className={`rotate-180 h-[7px] w-[10px] ${isActiveStep ? "rotate-90" : ""}`}
-                          width={10}
-                          height={7}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Step content */}
-                    <div
-                      className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
-                        isActiveStep
-                          ? "grid-rows-[1fr] opacity-100"
-                          : "grid-rows-[0fr] opacity-0"
-                      }`}
-                      aria-hidden={!isActiveStep}
-                      inert={!isActiveStep}
-                    >
-                      <div className="min-h-0 overflow-hidden">
-                        <div className="md:flex sm:grid grid grid-cols-2 flex-wrap justify-center gap-[15px]">
-                          {category.products.map((product) => {
-                            const previewVariantId =
-                              previewVariants[getCartKey(category, product)] ??
-                              getDefaultVariantId(product);
-                            const totalProductQuantity = product.variants
-                              ?.length
-                              ? product.variants.reduce(
-                                  (total, variant) =>
-                                    total +
-                                    (cart[
-                                      getCartKey(category, product, variant.id)
-                                    ]?.quantity ?? 0),
-                                  0,
-                                )
-                              : (cart[getCartKey(category, product)]
-                                  ?.quantity ?? 0);
-                            const previewCartKey = getCartKey(
-                              category,
-                              product,
-                              previewVariantId,
-                            );
-                            const previewQuantity =
-                              cart[previewCartKey]?.quantity ?? 0;
-                            const previewStock = getProductStock(
-                              product,
-                              previewVariantId,
-                            );
-                            const canIncrement =
-                              !isRequiredProduct(product) &&
-                              previewQuantity < previewStock;
-                            const canDecrement =
-                              previewQuantity > 0 &&
-                              (!isRequiredProduct(product) ||
-                                totalProductQuantity > 1);
-
-                            return (
-                              <Product
-                                key={getCartKey(category, product)}
-                                product={product}
-                                quantity={previewQuantity}
-                                isSelected={totalProductQuantity > 0}
-                                previewVariantId={previewVariantId}
-                                hideQuantityActions={category.key === "plans"}
-                                isRequired={isRequiredProduct(product)}
-                                canIncrement={canIncrement}
-                                canDecrement={canDecrement}
-                                onIncrement={() =>
-                                  updateQuantity(
-                                    category,
-                                    product,
-                                    1,
-                                    previewVariantId,
-                                  )
-                                }
-                                onDecrement={() =>
-                                  updateQuantity(
-                                    category,
-                                    product,
-                                    -1,
-                                    previewVariantId,
-                                  )
-                                }
-                                onSelectProduct={() =>
-                                  togglePlan(category, product)
-                                }
-                                onSelectVariant={(variantId) =>
-                                  previewVariant(category, product, variantId)
-                                }
-                              />
-                            );
-                          })}
-                        </div>
-
-                        <div className="flex flex-wrap justify-center gap-3 mt-[15px]">
-                          {nextCategory ? (
-                            <button
-                              type="button"
-                              className="x-btn-outline"
-                              onClick={goToNextStep}
-                            >
-                              Next: {nextCategory.label}
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <BundleStep
+                key={category.id}
+                category={category}
+                stepNumber={stepNumber}
+                maxStepLength={maxStepLength}
+                isActive={isActiveStep}
+                selectedCount={selectedCountByCategory[category.key] ?? 0}
+                nextCategoryLabel={nextCategory?.label}
+                cart={cart}
+                previewVariants={previewVariants}
+                onToggleStep={() =>
+                  setCurrentStep(isActiveStep ? null : stepNumber)
+                }
+                onNextStep={goToNextStep}
+                formatCurrency={formatCurrency}
+                onUpdateQuantity={updateQuantity}
+                onPreviewVariant={previewVariant}
+                onTogglePlan={togglePlan}
+              />
             );
           })}
         </div>

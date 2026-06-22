@@ -13,6 +13,7 @@ export type ProductItem = {
   discount_percentage: number;
   image?: string;
   old_price?: number;
+  period?: string;
   stock?: number;
   required?: boolean;
   is_required?: boolean;

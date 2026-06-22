@@ -123,6 +123,7 @@
           "description": "Wyze Cam v4",
           "price": 9.99,
           "old_price": 12.99,
+          "period": "MO",
           "discount_percentage": 22,
           "stock": 20,
           "image": "/images/plan.svg"
